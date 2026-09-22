@@ -1,4 +1,4 @@
-name: Deploy PPL Program to GitHub Pages
+name: Validate and deploy PPL Program
 
 on:
   push:
@@ -17,25 +17,40 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_ready: ${{ steps.pages.outcome == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Install dependencies
         run: npm install
-      - name: Build
+
+      - name: Validate curriculum and build
         run: npm run build
+
       - name: Configure Pages
+        id: pages
+        continue-on-error: true
         uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
+        if: steps.pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
+      - name: Pages not enabled yet
+        if: steps.pages.outcome != 'success'
+        run: echo "Build is valid. Enable Settings > Pages > GitHub Actions to activate deployment."
+
   deploy:
+    if: needs.build.outputs.pages_ready == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
