@@ -339,3 +339,95 @@ export function WindLab({ compact = false }: { compact?: boolean }) {
     </section>
   );
 }
+
+
+type CalcProblem = {
+  prompt: string;
+  answer: number;
+  unit: string;
+  tolerance: number;
+  explanation: string;
+};
+
+function makeCalcProblem(): CalcProblem {
+  const pick = Math.floor(Math.random() * 3);
+  if (pick === 0) {
+    const cm = [2, 3, 4, 6, 8, 10][Math.floor(Math.random() * 6)];
+    return {
+      prompt: "Carte 1:500 000 : " + cm + " cm représentent combien de kilomètres ?",
+      answer: cm * 5,
+      unit: "km",
+      tolerance: 0.1,
+      explanation: "À 1:500 000, 1 cm représente 5 km. On multiplie donc la distance carte par 5."
+    };
+  }
+  if (pick === 1) {
+    const distance = [30, 45, 60, 75, 90][Math.floor(Math.random() * 5)];
+    const gs = [90, 100, 120, 150][Math.floor(Math.random() * 4)];
+    return {
+      prompt: distance + " NM à " + gs + " kt de vitesse sol : quel temps de vol en minutes ?",
+      answer: distance / gs * 60,
+      unit: "min",
+      tolerance: 0.6,
+      explanation: "Temps (min) = distance / vitesse sol × 60."
+    };
+  }
+  const angle = [30, 45, 60][Math.floor(Math.random() * 3)];
+  const n = 1 / Math.cos(angle * Math.PI / 180);
+  return {
+    prompt: "Virage en palier à " + angle + "° : quel facteur de charge approximatif ?",
+    answer: n,
+    unit: "g",
+    tolerance: 0.08,
+    explanation: "En virage coordonné en palier, n ≈ 1 / cos(φ)."
+  };
+}
+
+export function CalculationTrainer() {
+  const [problem, setProblem] = useState<CalcProblem>(() => makeCalcProblem());
+  const [value, setValue] = useState("");
+  const [checked, setChecked] = useState<"good" | "bad" | null>(null);
+  const [score, setScore] = useState(0);
+
+  const verify = () => {
+    const number = Number(value.replace(",", "."));
+    if (!Number.isFinite(number)) return;
+    const good = Math.abs(number - problem.answer) <= problem.tolerance;
+    setChecked(good ? "good" : "bad");
+    if (good) setScore(current => current + 1);
+  };
+
+  const next = () => {
+    setProblem(makeCalcProblem());
+    setValue("");
+    setChecked(null);
+  };
+
+  return (
+    <section className="lab-card">
+      <div className="lab-title">
+        <div><span className="eyebrow">Calcul trainer</span><h3>Calcul mental PPL</h3></div>
+        <span className="score-pill">{score} ✓</span>
+      </div>
+      <p className="lab-prompt">{problem.prompt}</p>
+      <div className="calc-input-row">
+        <input
+          inputMode="decimal"
+          value={value}
+          onChange={event => setValue(event.target.value)}
+          onKeyDown={event => { if (event.key === "Enter") verify(); }}
+          placeholder="Ta réponse"
+          disabled={checked !== null}
+        />
+        <span>{problem.unit}</span>
+        <button className="button primary" onClick={checked ? next : verify}>{checked ? "Suivant" : "Vérifier"}</button>
+      </div>
+      {checked && (
+        <div className={"feedback " + checked}>
+          <strong>{checked === "good" ? "Correct" : "À recalculer"}</strong>
+          <p>Réponse : {problem.answer.toFixed(problem.unit === "g" ? 2 : 1)} {problem.unit}. {problem.explanation}</p>
+        </div>
+      )}
+    </section>
+  );
+}
