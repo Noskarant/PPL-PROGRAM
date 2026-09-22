@@ -1,0 +1,19 @@
+{
+  "name": "PPL Program",
+  "short_name": "PPL Program",
+  "description": "Préparation ludique et progressive au PPL(A) sur DR400.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8fc",
+  "theme_color": "#08213f",
+  "lang": "fr-FR",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
