@@ -778,3 +778,8 @@ a { color: var(--blue); }
   .week-card-top { display: grid; }
   .concept-head { display: grid; }
 }
+
+.calc-input-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 8px; align-items: center; margin-top: 14px; }
+.calc-input-row input { min-height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; color: var(--ink); background: #fbfdff; }
+.calc-input-row > span { color: var(--muted); font-weight: 800; min-width: 28px; }
+@media (max-width: 520px) { .calc-input-row { grid-template-columns: 1fr auto; } .calc-input-row .button { grid-column: 1 / 3; } }
